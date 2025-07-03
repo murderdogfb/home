@@ -117,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
     showSection(homeSection, [catalogoSection, internaSection]);
     if (menuLeft) menuLeft.classList.remove("active");
     document.querySelector("body > div[style]").classList.add("d-none")
+    document.querySelector("html").style.overflow = "auto"
   });
 
   btnCatalogo.addEventListener('click', function(e) {
@@ -124,6 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
     showSection(catalogoSection, [homeSection, internaSection]);
     if (menuLeft) menuLeft.classList.remove("active");
     document.querySelector("body > div[style]").classList.add("d-none")
+    document.querySelector("html").style.overflow = "auto"
   });
 
   // ==================== PÁGINA INTERNA DEL CATÁLOGO ====================

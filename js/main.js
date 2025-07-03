@@ -116,12 +116,14 @@ document.addEventListener("DOMContentLoaded", function () {
     e.preventDefault();
     showSection(homeSection, [catalogoSection, internaSection]);
     if (menuLeft) menuLeft.classList.remove("active");
+    document.querySelector("body > div[style]").classList.add("d-none")
   });
 
   btnCatalogo.addEventListener('click', function(e) {
     e.preventDefault();
     showSection(catalogoSection, [homeSection, internaSection]);
     if (menuLeft) menuLeft.classList.remove("active");
+    document.querySelector("body > div[style]").classList.add("d-none")
   });
 
   // ==================== PÁGINA INTERNA DEL CATÁLOGO ====================

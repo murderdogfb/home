@@ -281,10 +281,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const talla = document.querySelector('input[name="talla"]:checked').value;
       const molde = document.querySelector('input[name="molde"]:checked').value;
       
-      const message = `¡Hola @${config.instagramUser}! Estoy interesado en:%0A%0A` +
-                     `📌 *${productName}*%0A` +
-                     `🔹 Talla: ${talla}%0A` +
-                     `🔹 Molde: ${molde}%0A%0A` +
+      const message = `¡Hola @${config.instagramUser}! Estoy interesado en: %0A %0A` +
+                     `*${productName}* %0A` +
+                     `Talla: ${talla} %0A` +
+                     `Molde: ${molde} %0A %0A` +
                      `¿Podrías darme más información?`;
       
       const url = `https://www.instagram.com/direct/new/?text=${encodeURIComponent(message)}&recipient_username=${config.instagramUser}`;
@@ -305,9 +305,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const molde = document.querySelector('input[name="molde"]:checked').value;
       
       const message = `¡Hola! Estoy interesado en:%0A%0A` +
-                     `📌 *${productName}*%0A` +
-                     `🔹 Talla: ${talla}%0A` +
-                     `🔹 Molde: ${molde}%0A%0A` +
+                     `*${productName}* %0A` +
+                     `Talla: ${talla} %0A` +
+                     `Molde: ${molde} %0A %0A` +
                      `¿Podrías darme más información?`;
       
       const url = `https://wa.me/${config.whatsappNumber}?text=${encodeURIComponent(message)}`;

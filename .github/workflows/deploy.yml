@@ -1,0 +1,36 @@
+# .github/workflows/deploy.yml
+name: Deploy Astro to GitHub Pages
+
+on:
+  push:
+    branches: [main] # Se ejecuta cuando haces push a main
+  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # 1. Descarga tu repo
+      - uses: actions/setup-node@v4 # 2. Prepara Node
+        with:
+          node-version: 20
+      - run: pnpm install # 3. Instala dependencias
+      - run: pnpm build # 4. Hace el build (genera dist/)
+      - uses: actions/upload-pages-artifact@v3 # 5. Sube dist/ como artefacto
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4 # 6. Publica ese artefacto en GitHub Pages

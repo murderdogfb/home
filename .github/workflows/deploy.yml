@@ -19,18 +19,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm" # cache para pnpm (opcional pero recomendado)
+          cache: "pnpm"
 
-      # 👉 Esto activa pnpm usando corepack (incluido con Node 20)
-      - run: corepack enable
+      # 👇 Instala pnpm en el runner
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false # dejamos la instalación para el siguiente paso
 
-      # Instala dependencias
+      # 👇 Ahora sí puedes usar pnpm con normalidad
       - run: pnpm install
+      - run: pnpm run build
 
-      # Construye el proyecto Astro
-      - run: pnpm build
-
-      # Sube la carpeta dist como artefacto para GitHub Pages
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

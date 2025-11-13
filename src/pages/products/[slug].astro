@@ -1,0 +1,61 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { wp, TYPE, fetchJSON, getFeaturedUrl } from "../../lib/wp";
+
+type WPItem = {
+  id: number;
+  slug: string;
+  title: { rendered: string };
+  content?: { rendered: string };
+  featured_media?: number;
+  jetpack_featured_media_url?: string;
+};
+
+export async function getStaticPaths() {
+  const posts = await fetchJSON<WPItem[]>(wp(`/${TYPE}?per_page=100`));
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+
+// En WP.com, "slug" suele funcionar con ?slug=<valor> (si no, prueba ?slug[]=<valor>)
+let url = wp(`/${TYPE}?slug=${encodeURIComponent(slug)}`);
+// Si no devuelve nada, prueba con array:
+// url = wp(`/${TYPE}?slug[]=${encodeURIComponent(slug)}`);
+
+const list = await fetchJSON<WPItem[]>(url);
+const product = list[0];
+if (!product) {
+  return Astro.redirect("/404");
+}
+
+const img = getFeaturedUrl(product);
+---
+
+<Layout>
+  <Header />
+  <main class="container mx-auto px-6 py-12">
+    <a href="/catalogo" class="text-primary underline">&larr; Volver</a>
+
+    <article class="mt-6">
+      <h1
+        class="text-3xl font-bold text-primary"
+        set:html={product.title.rendered}
+      />
+      {
+        img && (
+          <img src={img} alt={product.title.rendered} class="mt-6 rounded-lg" />
+        )
+      }
+      <div
+        class="prose mt-6 max-w-none"
+        set:html={product.content?.rendered ?? ""}
+      />
+    </article>
+  </main>
+  <Footer />
+</Layout>

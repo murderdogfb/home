@@ -1,0 +1,206 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { wp, TYPE, fetchJSON, getFeaturedUrl } from "../lib/wp";
+
+type WPItem = {
+  id: number;
+  slug: string;
+  title: { rendered: string };
+  excerpt?: { rendered: string };
+  featured_media?: number;
+  jetpack_featured_media_url?: string;
+  categories?: number[];
+};
+
+type WPCategory = {
+  id: number;
+  slug: string;
+};
+
+// Definir los slugs de categorías que vas a usar en el UI
+const VALIDOS = ["ruedas", "tablas", "trucks", "otros"] as const;
+type Tipo = (typeof VALIDOS)[number];
+
+// Traer todas las categorías una sola vez para mapear ID → slug
+let categoriaPorId = new Map<number, string>();
+if (TYPE === "posts") {
+  const categorias = await fetchJSON<WPCategory[]>(
+    wp(`/categories?per_page=100`)
+  );
+  categoriaPorId = new Map(categorias.map((cat) => [cat.id, cat.slug]));
+}
+
+const items = await fetchJSON<WPItem[]>(wp(`/${TYPE}?per_page=12`));
+
+const getItemTipo = (item: WPItem): Tipo => {
+  for (const catId of item.categories ?? []) {
+    const slug = categoriaPorId.get(catId);
+    if (slug && VALIDOS.includes(slug as Tipo)) {
+      return slug as Tipo;
+    }
+  }
+  return "otros";
+};
+---
+
+<Layout>
+  <Header />
+  <main class="container mx-auto px-6 py-12">
+    <h1 class="text-3xl font-bold text-primary mb-6">Catálogo</h1>
+
+    <!-- UI de filtros -->
+    <nav class="mb-6 flex flex-wrap gap-2">
+      {
+        (
+          [
+            { label: "Todo", href: "/catalogo", value: "" },
+            { label: "Ruedas", href: "/catalogo?tipo=ruedas", value: "ruedas" },
+            { label: "Tablas", href: "/catalogo?tipo=tablas", value: "tablas" },
+            { label: "Trucks", href: "/catalogo?tipo=trucks", value: "trucks" },
+            { label: "Otros", href: "/catalogo?tipo=otros", value: "otros" },
+          ] as const
+        ).map((f) => (
+          <a
+            href={f.href}
+            data-filter={f.value}
+            class="rounded-full px-4 py-1.5 text-sm font-medium border transition-colors bg-bg text-fg border-primary/20 hover:bg-primary/10"
+          >
+            {f.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <!-- Lista -->
+    <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <li
+        data-empty
+        class={[
+          "col-span-full text-muted",
+          items.length > 0 ? "hidden" : "",
+        ].join(" ")}
+      >
+        No encontramos resultados.
+      </li>
+      {
+        items.map((p) => {
+          const img = getFeaturedUrl(p);
+          const itemTipo = getItemTipo(p);
+          return (
+            <li
+              data-item
+              data-categoria={itemTipo}
+              class="rounded-lg border border-primary/15 p-4"
+            >
+              <a href={`/products/${p.slug}`} class="block">
+                {img && (
+                  <img
+                    src={img}
+                    alt={p.title.rendered}
+                    class="mb-3 rounded-md"
+                    loading="lazy"
+                  />
+                )}
+                <h2 class="text-lg font-semibold" set:html={p.title.rendered} />
+                {p.excerpt?.rendered && (
+                  <div
+                    class="mt-2 text-sm text-muted"
+                    set:html={p.excerpt.rendered}
+                  />
+                )}
+                <span class="inline-block mt-3 bg-primary text-white px-3 py-1 rounded-md text-sm">
+                  Ver detalle
+                </span>
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+
+    <script is:inline>
+      const VALIDOS = new Set(["ruedas", "tablas", "trucks", "otros"]);
+      const ACTIVE_CLASSES = ["bg-primary", "text-white", "border-primary"];
+      const INACTIVE_CLASSES = [
+        "bg-bg",
+        "text-fg",
+        "border-primary/20",
+        "hover:bg-primary/10",
+      ];
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const filtros = Array.from(document.querySelectorAll("[data-filter]"));
+        const tarjetas = Array.from(document.querySelectorAll("[data-item]"));
+        const emptyMessage = document.querySelector("[data-empty]");
+        const params = new URLSearchParams(window.location.search);
+        let tipoActual = params.get("tipo");
+
+        if (!tipoActual || !VALIDOS.has(tipoActual)) {
+          tipoActual = null;
+        }
+
+        const toggleLinkState = (link, isActive) => {
+          ACTIVE_CLASSES.forEach((cls) => link.classList.toggle(cls, isActive));
+          INACTIVE_CLASSES.forEach((cls) =>
+            link.classList.toggle(cls, !isActive)
+          );
+        };
+
+        const applyFilter = (nuevoTipo) => {
+          let visibles = 0;
+
+          tarjetas.forEach((card) => {
+            const coincide = !nuevoTipo || card.dataset.categoria === nuevoTipo;
+            card.classList.toggle("hidden", !coincide);
+            if (coincide) visibles += 1;
+          });
+
+          filtros.forEach((link) => {
+            const valor = link.dataset.filter || null;
+            const isActive = valor ? valor === nuevoTipo : !nuevoTipo;
+            toggleLinkState(link, isActive);
+          });
+
+          if (emptyMessage) {
+            emptyMessage.classList.toggle("hidden", visibles > 0);
+          }
+
+          if (nuevoTipo) {
+            params.set("tipo", nuevoTipo);
+          } else {
+            params.delete("tipo");
+          }
+
+          const nextQuery = params.toString();
+          const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
+          window.history.replaceState({}, "", nextUrl);
+          tipoActual = nuevoTipo;
+        };
+
+        filtros.forEach((link) => {
+          link.addEventListener("click", (event) => {
+            if (
+              event.defaultPrevented ||
+              event.metaKey ||
+              event.ctrlKey ||
+              event.shiftKey ||
+              event.altKey ||
+              event.button !== 0
+            ) {
+              return;
+            }
+
+            event.preventDefault();
+            const valor = link.dataset.filter || null;
+            applyFilter(valor);
+          });
+        });
+
+        applyFilter(tipoActual);
+      });
+    </script>
+  </main>
+  <Footer />
+</Layout>

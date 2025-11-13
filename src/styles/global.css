@@ -1,0 +1,19 @@
+/* src/styles/global.css */
+@import "tailwindcss";
+
+/* Paleta base (clara) */
+@theme {
+  --color-primary: #400d59;   /* Morado base */
+  --color-secondary: #FDB927; /* Oro Lakers */
+
+  /* Neutros de UI (puedes ajustar luego) */
+  --color-bg: #ffffff;
+  --color-fg: #0f172a;        /* slate-900 aprox */
+  --color-muted: #64748b;     /* slate-500 aprox */
+
+  /* Semánticos (puedes mantener los de Tailwind o personalizarlos) */
+  --color-success: #16a34a;   /* green-600 */
+  --color-warning: #f59e0b;   /* amber-500 */
+  --color-danger:  #ef4444;   /* red-500 */
+  --color-info:    #0ea5e9;   /* sky-500 */
+}

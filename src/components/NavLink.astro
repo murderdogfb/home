@@ -1,0 +1,23 @@
+---
+/**
+ * Props:
+ * - href: string (ruta del link)
+ * - label: string (texto visible)
+ * - currentPath: string (ruta actual, la pasamos desde Header)
+ */
+const { href = "#", label = "", currentPath = "" } = Astro.props;
+const isActive = currentPath === href;
+---
+
+<a
+  href={href}
+  aria-current={isActive ? "page" : undefined}
+  class:list={[
+    "text-sm font-medium transition-colors",
+    isActive
+      ? "text-primary dark:text-primary"
+      : "text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary",
+  ]}
+>
+  {label}
+</a>

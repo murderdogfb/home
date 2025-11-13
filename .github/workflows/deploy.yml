@@ -19,12 +19,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          # cache: "npm"
 
-      # 👇 Aquí usamos npm en vez de pnpm
-      - run: npm install
-      - run: npm run build
+      # 👇 1) Bajar npm a una versión estable (9)
+      - name: Use npm@9
+        run: npm install -g npm@9
 
+      # 👇 2) Instalar dependencias con npm
+      - name: Install dependencies
+        run: npm install
+
+      # 👇 3) Construir el proyecto Astro
+      - name: Build project
+        run: npm run build
+
+      # 👇 4) Subir la carpeta dist para Pages
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

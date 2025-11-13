@@ -19,17 +19,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
+          cache: "npm"
 
-      # 👇 Instala pnpm en el runner
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false # dejamos la instalación para el siguiente paso
-
-      # 👇 Ahora sí puedes usar pnpm con normalidad
-      - run: pnpm install
-      - run: pnpm run build
+      # 👇 Aquí usamos npm en vez de pnpm
+      - run: npm install
+      - run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
         with:
